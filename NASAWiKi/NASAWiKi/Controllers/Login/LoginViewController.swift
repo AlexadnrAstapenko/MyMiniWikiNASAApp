@@ -6,9 +6,13 @@
 //
 
 import Firebase
+import NVActivityIndicatorView
+import NVActivityIndicatorViewExtended
 import UIKit
 
-class LoginViewController: UIViewController {
+// MARK: - LoginViewController
+
+class LoginViewController: UIViewController, NVActivityIndicatorViewable {
     // MARK: Internal
 
     var ref: DatabaseReference!
@@ -25,6 +29,7 @@ class LoginViewController: UIViewController {
     }
 
     @IBAction func loginBtn(_: Any) {
+        setUpAnimation()
         guard let email = loginTF.text,
               let password = passwordTF.text,
               !email.isEmpty, !password.isEmpty
@@ -37,6 +42,7 @@ class LoginViewController: UIViewController {
                 self?.dispalyWarningLabel(withText: "Registration error: \(error.localizedDescription)")
             } else if let _ = user {
                 self?.selectVC(vc: MainPageVC(), storyboard: .main)
+                self?.stopAnimating()
             } else {
                 self?.dispalyWarningLabel(withText: "Something wrong")
             }
@@ -46,6 +52,7 @@ class LoginViewController: UIViewController {
     }
 
     @IBAction func registrationBtn() {
+        setUpAnimation()
         guard let email = loginTF.text,
               let password = passwordTF.text,
               !email.isEmpty, !password.isEmpty
@@ -61,6 +68,7 @@ class LoginViewController: UIViewController {
                 let userRef = self?.ref.child(user.user.uid)
                 userRef?.setValue(["email": user.user.email])
                 self?.selectVC(vc: MainPageVC(), storyboard: .main)
+                self?.stopAnimating()
             }
         }
         loginTF.text = ""
@@ -77,10 +85,20 @@ class LoginViewController: UIViewController {
             self?.errorLbl.alpha = 0
         }
     }
+
+    private func setUpAnimation() {
+        startAnimating(
+            CGSize(width: 40, height: 40),
+            message: "Please wait..",
+            type: .ballClipRotateMultiple,
+            color: .black
+        )
+    }
 }
 
+// MARK: UITextFieldDelegate
+
 extension LoginViewController: UITextFieldDelegate {
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField === loginTF {
             passwordTF.becomeFirstResponder()
